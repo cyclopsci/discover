@@ -21,7 +21,6 @@ type Lang struct {
 	Paths		[]string
 	Matchers	[]string
 	RequiredDirs	[]string
-	OptionalDirs	[]string
 	IgnoredDirs	[]string
 }
 
