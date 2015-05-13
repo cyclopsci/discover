@@ -9,7 +9,6 @@ var PuppetFiles = Lang{
 var PuppetModule = Lang{
 	Key:		"puppet_modules",
 	Paths:		[]string{"manifests/init.pp", "Modulefile", "metadata.json"},
-	RequiredDirs:	[]string{"manifests"},
 	IgnoredDirs:	[]string{"spec", "pkg", "tests", "test"},
 }
 

@@ -20,7 +20,6 @@ type Lang struct {
 	Ext		string
 	Paths		[]string
 	Matchers	[]string
-	RequiredDirs	[]string
 	IgnoredDirs	[]string
 }
 
@@ -32,12 +31,13 @@ func main() {
 		results[lang.Key] = lang.Analyze(tree)
 	}
 	results["root"] = []string{*root}
-	jsonResults, _ := json.Marshal(results)
+	jsonResults, _ := json.MarshalIndent(results, "", "\t")
 	fmt.Println(string(jsonResults))
 }
 
 func (l *Lang) Analyze(t Tree) []string {
 	var base_path string
+	var re_matcher *regexp.Regexp
 	var matches []string
 	candidates := t.Files
 	for _, value := range l.IgnoredDirs {
@@ -47,6 +47,13 @@ func (l *Lang) Analyze(t Tree) []string {
 		for _, p := range l.Paths {
 			base_path = strings.Replace(value, p, "", 1)
 			if match(p, value) && !contains(matches, base_path) {
+				matches = append(matches, base_path)
+			}
+		}
+		for _, m := range l.Matchers {
+			re_matcher = regexp.MustCompile("(" + m + ")")
+			if match(m, value) {
+				base_path = re_matcher.ReplaceAllString(value, "")
 				matches = append(matches, base_path)
 			}
 		}
