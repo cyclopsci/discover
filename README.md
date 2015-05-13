@@ -3,7 +3,7 @@ Discovery utility that returns the location of specific automation types
 
 # Usage
 
-    go build *.go
+    go build discover.go
     ./discover -directory <path_to_automation>
 
 # Sample Output
@@ -40,3 +40,7 @@ Discovery utility that returns the location of specific automation types
 * **Paths** (_slice [string]_): include the folders that contain these items as children (assumes each item is the end of the path)
 * **Matchers** (_slice [string]_): include the folders that contain these regex items as children (assumes each item is the end of the path)
 * **IgnoredDirs** (_slice [string]_): ignore any path that contains these directories
+
+# Developing
+
+    go test -v ./main/*

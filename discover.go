@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"flag"
 	"./main"
 )
@@ -11,5 +12,6 @@ var (
 
 func main() {
 	flag.Parse()
-	discover.Discover(*root)
+	results := discover.Discover(*root)
+	fmt.Println(results)
 }

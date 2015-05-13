@@ -21,7 +21,7 @@ type Lang struct {
 	IgnoredDirs	[]string
 }
 
-func Discover(root string) {
+func Discover(root string) string {
 	os.Chdir(root)
 	tree, _ := walk(root)
 	for _, lang := range languages {
@@ -29,7 +29,7 @@ func Discover(root string) {
 	}
 	results["root"] = []string{root}
 	json_results, _ := json.MarshalIndent(results, "", "\t")
-	fmt.Println(string(json_results))
+	return string(json_results)
 }
 
 func analyze(l Lang, t Tree) []string {
