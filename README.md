@@ -36,7 +36,7 @@ Discovery utility that returns the location of specific automation types
 
 ## ```Lang```
 * **Key** (_string_): name to associate the returned values in the JSON results
-* **Ext** (_string_): look and include all files matching this extension (omit a leading '.')
+* **Extensions** (_slice [string]_): include all files matching any of the specified extension (omit a leading '.')
 * **Paths** (_slice [string]_): include the folders that contain these items as children (assumes each item is the end of the path)
 * **Matchers** (_slice [string]_): include the folders that contain these regex items as children (assumes each item is the end of the path)
 * **IgnoredDirs** (_slice [string]_): ignore any path that contains these directories

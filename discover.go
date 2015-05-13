@@ -11,13 +11,13 @@ import (
 
 var (
 	root = flag.String("directory", ".", "directory to discover")
-	languages = []Lang{PuppetFiles, PuppetModule}
+	languages = []Lang{PuppetFiles, PuppetModule, Yaml}
 	results = make(map[string][]string)
 )
 
 type Lang struct {
 	Key		string
-	Ext		string
+	Extensions	[]string
 	Paths		[]string
 	Matchers	[]string
 	IgnoredDirs	[]string
@@ -57,8 +57,8 @@ func (l *Lang) Analyze(t Tree) []string {
 				matches = append(matches, base_path)
 			}
 		}
-		if l.Ext != "" {
-			if l.Ext == extension(value) {
+		for _, e := range l.Extensions {
+			if e == extension(value) {
 				matches = append(matches, value)
 			}
 		}

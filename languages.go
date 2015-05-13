@@ -2,7 +2,7 @@ package main
 
 var PuppetFiles = Lang{
 	Key:		"puppet_files",
-	Ext:		"pp",
+	Extensions:	[]string{"pp"},
 	IgnoredDirs:	[]string{"spec", "pkg", "tests", "test"},
 }
 
@@ -12,3 +12,7 @@ var PuppetModule = Lang{
 	IgnoredDirs:	[]string{"spec", "pkg", "tests", "test"},
 }
 
+var Yaml = Lang{
+	Key:		"yaml_files",
+	Extensions:	[]string{"yml", "yaml"},
+}
