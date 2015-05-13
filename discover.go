@@ -31,8 +31,8 @@ func main() {
 		results[lang.Key] = lang.Analyze(tree)
 	}
 	results["root"] = []string{*root}
-	jsonResults, _ := json.MarshalIndent(results, "", "\t")
-	fmt.Println(string(jsonResults))
+	json_results, _ := json.MarshalIndent(results, "", "\t")
+	fmt.Println(string(json_results))
 }
 
 func (l *Lang) Analyze(t Tree) []string {
@@ -94,8 +94,12 @@ func match(matcher string, value string) bool {
 	return false
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s { if a == e { return true } }
+func contains(s []string, v string) bool {
+	for _, i := range s {
+		if i == v {
+			return true
+		}
+	}
 	return false
 }
 
