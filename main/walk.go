@@ -1,4 +1,4 @@
-package main
+package discover
 
 import (
 	"os"

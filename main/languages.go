@@ -1,4 +1,4 @@
-package main
+package discover
 
 var PuppetFiles = Lang{
 	Key:		"puppet_files",
