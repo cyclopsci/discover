@@ -1,4 +1,4 @@
-# Discover
+# Discover [![Build Status](https://travis-ci.org/cyclopsci/discover.svg?branch=master)](https://travis-ci.org/cyclopsci/discover)
 Discovery utility that returns the location of specific automation types
 
 # Usage
