@@ -3,7 +3,7 @@ Discovery utility that returns the location of specific automation types
 
 # Usage
 
-    go build discover.go
+    go build ./cli/discover.go
     ./discover -directory <path_to_automation>
 
 # Sample Output
@@ -43,4 +43,4 @@ Discovery utility that returns the location of specific automation types
 
 # Developing
 
-    go test -v ./main/*
+    go test -v ./

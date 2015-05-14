@@ -2,22 +2,37 @@ package discover
 
 import (
 	"testing"
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 )
 
-type JsonResults struct {
-	Root		[]string	`json:"root"`
-	PuppetModules	[]string	`json:"puppet_modules"`
-	PuppetFiles	[]string	`json:"puppet_files"`
-	YAMLFiles	[]string	`json:"yaml_files"`
+func TestRun(t *testing.T) {
+	results := Run(".")
+	assert.Equal(t, []string{"."}, results["root"])
 }
 
-func TestDiscover(t *testing.T) {
-	json_output := Discover(".")
-	response := &JsonResults{}
-	json.Unmarshal([]byte(json_output), &response)
-	assert.Equal(t, []string{"."}, response.Root)
+func TestAnalyze(t *testing.T) {
+	lang := Lang{
+		Key:		"lang",
+		Extensions:	[]string{"z"},
+		Paths:		[]string{"a/b/x.z"},
+		Matchers:	[]string{"a/b/(c|d).z"},
+		IgnoredDirs:	[]string{"i"},
+	}
+	tree := Tree{
+		Files: []string{
+			"/1/a/b/x.z",
+			"/1/a/b/c.z",
+			"/1/a/b/c.y",
+			"/1/d/e.z",
+			"/i/d/f.z",
+		},
+	}
+	results := analyze(lang, tree)
+	assert.Contains(t, results, "/1/a/b/x.z")
+	assert.Contains(t, results, "/1/a/b/c.z")
+	assert.Contains(t, results, "/1/d/e.z")
+	assert.NotContains(t, results, "/1/a/b/c.y")
+	assert.NotContains(t, results, "/i/d/e.z")
 }
 
 func TestFilter(t *testing.T) {
