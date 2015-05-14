@@ -1,9 +1,12 @@
 # Discover [![Build Status](https://travis-ci.org/cyclopsci/discover.svg?branch=master)](https://travis-ci.org/cyclopsci/discover)
 Discovery utility that returns the location of specific automation types
 
+# Installation
+
+    go get github.com/cyclopsci/discover/...
+
 # Usage
 
-    go build ./cli/discover.go
     ./discover -directory <path_to_automation>
 
 # Sample Output
@@ -44,3 +47,5 @@ Discovery utility that returns the location of specific automation types
 # Developing
 
     go test -v ./
+    go build ./...
+    go install ./...
