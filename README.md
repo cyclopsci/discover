@@ -1,4 +1,4 @@
-# Discover [![Build Status](https://travis-ci.org/cyclopsci/discover.svg?branch=master)](https://travis-ci.org/cyclopsci/discover)
+# Discover [![Build Status](https://circleci.com/gh/cyclopsci/discover.svg?&style=shield&circle-token=bb753ccb4400119162fb978d41adcdc601b58383)](https://circleci.com/gh/cyclopsci/discover/)
 Discovery utility that returns the location of specific automation types
 
 # Installation
