@@ -1,7 +1,6 @@
 package discover
 
 import (
-	_ "os"
 	"testing"
 	"github.com/onsi/gomega"
 )
@@ -14,7 +13,6 @@ func TestRun(t *testing.T) {
 
 func TestWalkDirectory(t *testing.T) {
 	gomega.RegisterTestingT(t)
-	//cwd, _ := os.Getwd()
 	walkDirectory(".")
 	gomega.Expect(tree).To(gomega.ContainElement(".gitignore"))
 	gomega.Expect(tree).To(gomega.ContainElement("README.md"))
