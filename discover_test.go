@@ -1,65 +1,61 @@
 package discover
 
 import (
+	_ "os"
 	"testing"
-	"github.com/stretchr/testify/assert"
+	"github.com/onsi/gomega"
 )
 
 func TestRun(t *testing.T) {
+	gomega.RegisterTestingT(t)
 	results := Run(".")
-	assert.Equal(t, []string{"."}, results["root"])
+	gomega.Expect(results["root"]).To(gomega.Equal([]string{"."}))
+}
+
+func TestWalkDirectory(t *testing.T) {
+	gomega.RegisterTestingT(t)
+	//cwd, _ := os.Getwd()
+	walkDirectory(".")
+	gomega.Expect(tree).To(gomega.ContainElement(".gitignore"))
+	gomega.Expect(tree).To(gomega.ContainElement("README.md"))
+	gomega.Expect(tree).To(gomega.ContainElement("LICENSE"))
+	gomega.Expect(tree).To(gomega.ContainElement("discover/main.go"))
+	gomega.Expect(tree).To(gomega.ContainElement("discover.go"))
+	gomega.Expect(tree).To(gomega.ContainElement("languages.go"))
 }
 
 func TestAnalyze(t *testing.T) {
-	lang := Lang{
+	gomega.RegisterTestingT(t)
+	lang := language{
 		Key:		"lang",
 		Extensions:	[]string{"z"},
 		Paths:		[]string{"a/b/x.z"},
 		Matchers:	[]string{"a/b/(c|d).z"},
 		IgnoredDirs:	[]string{"i"},
 	}
-	tree := Tree{
-		Files: []string{
-			"/1/a/b/x.z",
-			"/1/a/b/c.z",
-			"/1/a/b/c.y",
-			"/1/d/e.z",
-			"/i/d/f.z",
-		},
+	tree := []string{
+		"/1/a/b/x.z",
+		"/1/a/b/c.z",
+		"/1/a/b/c.y",
+		"/1/d/e.z",
+		"/i/d/f.z",
+		"/a/d/f.z",
 	}
-	results := analyze(lang, tree)
-	assert.Contains(t, results, "/1/a/b/x.z")
-	assert.Contains(t, results, "/1/a/b/c.z")
-	assert.Contains(t, results, "/1/d/e.z")
-	assert.NotContains(t, results, "/1/a/b/c.y")
-	assert.NotContains(t, results, "/i/d/e.z")
-}
-
-func TestFilter(t *testing.T) {
-	haystack := []string{"a", "b"}
-	needle := "a"
-	result := filter(needle, haystack)
-	assert.Equal(t, []string{"b"}, result)
+	results := analyzeTree([]language{lang}, tree)
+	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/1/"))
+	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/a/d/f.z"))
+	gomega.Expect(results[lang.Key]).ToNot(gomega.ContainElement("/1/a/b/c.y"))
 }
 
 func TestSearch(t *testing.T) {
-	assert.True(t, search("pkg", "/dir1/pkg/subdir/"))
-	assert.False(t, search("dir2", "/dir1/pkg/subdir/"))
+	gomega.RegisterTestingT(t)
+	gomega.Expect(search("pkg", "/dir1/pkg/subdir/")).To(gomega.BeTrue())
+	gomega.Expect(search("dir2", "/dir1/pkg/subdir/")).To(gomega.BeFalse())
 }
 
-func TestMatch(t *testing.T) {
-	assert.True(t, match("manifests/init.pp", "/dir1/manifests/init.pp"))
-	assert.False(t, match("manifests/init.pp", "/dir1/manifests/init.pp/"))
-}
-
-func TestContains(t *testing.T) {
+func TestStringInSlice(t *testing.T) {
+	gomega.RegisterTestingT(t)
 	s := []string{"a","b"}
-	assert.True(t, contains(s, "a"))
-	assert.False(t, contains(s, "c"))
+	gomega.Expect(stringInSlice("a", s)).To(gomega.BeTrue())
+	gomega.Expect(stringInSlice("c", s)).To(gomega.BeFalse())
 }
-
-func TestExtension(t *testing.T) {
-	assert.Equal(t, "pp", extension("/test.one/test.pp"))
-	assert.NotEqual(t, "pp", extension("/test.one/test.p"))
-}
-

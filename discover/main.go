@@ -14,6 +14,6 @@ var (
 func main() {
 	flag.Parse()
 	results := discover.Run(*root)
-	json_results, _ := json.MarshalIndent(results, "", "\t")
-	fmt.Println(string(json_results))
+	jsonResults, _ := json.MarshalIndent(results, "", "\t")
+	fmt.Println(string(jsonResults))
 }

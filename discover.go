@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"path/filepath"
 )
 
 var (
-	Languages = []Lang{
-		PuppetFiles,
-		PuppetModule,
-		YamlFiles,
+	tree []string
+	languages = []language{
+		puppetFiles,
+		puppetModule,
+		yamlFiles,
 	}
-	Results = make(map[string][]string)
 )
 
-type Lang struct {
+type language struct {
 	Key		string
 	Extensions	[]string
 	Paths		[]string
@@ -24,85 +25,103 @@ type Lang struct {
 	IgnoredDirs	[]string
 }
 
+// Run returns all matches of a language type from the root of the specified tree
 func Run(root string) map[string][]string {
 	os.Chdir(root)
-	tree, _ := walk(root)
-	for _, lang := range Languages {
-		Results[lang.Key] = analyze(lang, tree)
-	}
-	Results["root"] = []string{root}
-	return Results
+	walkDirectory(root)
+	results := analyzeTree(languages, tree)
+	results["root"] = []string{root}
+	return results
 }
 
-func analyze(l Lang, t Tree) []string {
-	var base_path string
-	var re_matcher *regexp.Regexp
+func walkDirectory(root string) {
+	filepath.Walk(root, visitFile)
+}
+
+func visitFile(path string, file os.FileInfo, err error) error {
+	if !file.IsDir() {
+		tree = append(tree, path)
+	}
+	return nil
+}
+
+func analyzeTree(languages []language, tree []string) map[string][]string {
 	var matches []string
-	candidates := t.Files
-	for _, value := range l.IgnoredDirs {
-		candidates = filter(value, candidates)
-	}
-	for _, value := range candidates {
-		for _, p := range l.Paths {
-			base_path = strings.Replace(value, p, "", 1)
-			if match(p, value) && !contains(matches, base_path) {
-				matches = append(matches, base_path)
-			}
-		}
-		for _, m := range l.Matchers {
-			re_matcher = regexp.MustCompile("(" + m + ")")
-			if match(m, value) {
-				base_path = re_matcher.ReplaceAllString(value, "")
-				matches = append(matches, base_path)
-			}
-		}
-		for _, e := range l.Extensions {
-			if e == extension(value) {
-				matches = append(matches, value)
+	var candidates = make(map[string][]string)
+	for _, f := range tree {
+		for _, lang := range languages {
+			match := matchLanguage(lang, f)
+			if match != "" {
+				matches = append(matches, match)
+				candidates[lang.Key] = append(candidates[lang.Key], match)
 			}
 		}
 	}
-	return matches
+	for _, lang := range languages {
+		candidates[lang.Key] = deduplicate(candidates[lang.Key], matches)
+	}
+	return candidates
 }
 
-func filter(needle string, haystack []string) []string {
-	var result []string
-	for _, value := range haystack {
-		if !search(needle, value) {
-			result = append(result, value)
+func deduplicate(languageMatches []string, totalMatches []string) []string {
+	var results []string
+	var found bool
+	for _, l := range languageMatches {
+		found = false
+		for _, m := range totalMatches {
+			if strings.Contains(l, m) && l != m {
+				found = true
+			}
+		}
+		if !found && !stringInSlice(l, results) {
+			results = append(results, l)
 		}
 	}
-	return result
+	return results
 }
 
-func search(matcher string, value string) bool {
-	exp := fmt.Sprintf("^.*(/)?%s(/)?", matcher)
-	matched, _ := regexp.MatchString(exp, value)
+func matchLanguage(lang language, file string) string {
+	for _, value := range lang.IgnoredDirs {
+		if search(value, file) {
+			return ""
+		}
+	}
+	for _, value := range lang.Paths {
+		if search(value, file) {
+			return strings.Replace(file, value, "", 1)
+		}
+	}
+	for _, value := range lang.Matchers {
+		match, _ := regexp.MatchString(fmt.Sprintf("^.*(/)?%s$", value), file)
+		if match {
+			re := regexp.MustCompile("(" + value + ")")
+			return re.ReplaceAllString(file, "")
+		}
+	}
+	for _, value := range lang.Extensions {
+		ext := strings.Replace(filepath.Ext(file), ".", "", 1)
+		if value == ext {
+			return file
+		}
+
+	}
+	return ""
+}
+
+func search(value string, target string) bool {
+	exp := fmt.Sprintf("^.*(/)?%s(/)?", value)
+	matched, _ := regexp.MatchString(exp, target)
 	if matched {
 		return true
 	}
 	return false
 }
 
-func match(matcher string, value string) bool {
-	exp := fmt.Sprintf("^.*(/)?%s$", matcher)
-	matched, _ := regexp.MatchString(exp, value)
-	if matched {
-		return true
-	}
-	return false
-}
-
-func contains(s []string, v string) bool {
-	for _, i := range s {
-		if i == v {
+func stringInSlice(value string, slice []string) bool {
+	for _, s := range slice {
+		if s == value {
 			return true
 		}
 	}
 	return false
-}
-
-func extension(v string) string {
-	sl := strings.Split(v, ".")
-	return sl[len(sl)-1]
 }
