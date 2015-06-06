@@ -12,7 +12,12 @@ var puppetModule = language{
 	IgnoredDirs:	[]string{"spec", "pkg", "tests", "test"},
 }
 
-var yamlFiles = language{
-	Key:		"yaml_files",
-	Extensions:	[]string{"yml", "yaml"},
+var ansibleRoles = language{
+	Key:		"ansible_roles",
+	Paths:		[]string{"tasks/main.yml", "meta/main.yml"},
+}
+
+var ansiblePlaybooks = language{
+	Key:		"ansible_playbooks",
+	ContentRegex:	[]string{"^(\\s+)?([-]\\s)?hosts: \\S+"},
 }

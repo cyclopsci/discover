@@ -3,6 +3,7 @@ package discover
 import (
 	"os"
 	"fmt"
+	"bufio"
 	"regexp"
 	"strings"
 	"path/filepath"
@@ -13,7 +14,8 @@ var (
 	languages = []language{
 		puppetFiles,
 		puppetModule,
-		yamlFiles,
+		ansibleRoles,
+		ansiblePlaybooks,
 	}
 )
 
@@ -21,7 +23,8 @@ type language struct {
 	Key		string
 	Extensions	[]string
 	Paths		[]string
-	Matchers	[]string
+	PathMatchers	[]string
+	ContentRegex	[]string
 	IgnoredDirs	[]string
 }
 
@@ -91,7 +94,7 @@ func matchLanguage(lang language, file string) string {
 			return strings.Replace(file, value, "", 1)
 		}
 	}
-	for _, value := range lang.Matchers {
+	for _, value := range lang.PathMatchers {
 		match, _ := regexp.MatchString(fmt.Sprintf("^.*(/)?%s$", value), file)
 		if match {
 			re := regexp.MustCompile("(" + value + ")")
@@ -104,6 +107,11 @@ func matchLanguage(lang language, file string) string {
 			return file
 		}
 
+	}
+	for _, value := range lang.ContentRegex {
+		if searchContent(value, file) {
+			return strings.Replace(file, value, "", 1)
+		}
 	}
 	return ""
 }
@@ -120,6 +128,31 @@ func search(value string, target string) bool {
 func stringInSlice(value string, slice []string) bool {
 	for _, s := range slice {
 		if s == value {
+			return true
+		}
+	}
+	return false
+}
+
+func searchContent(expression string, file string) bool {
+	regex, err := regexp.Compile(expression)
+	if err != nil {
+		return false
+	}
+	fh, err := os.Open(file)
+	f := bufio.NewReader(fh)
+	if err != nil {
+		return false
+	}
+	defer fh.Close()
+	buf := make([]byte, 1024)
+	for {
+		buf, _ , err = f.ReadLine()
+		if err != nil {
+			return false
+		}
+		s := string(buf)
+		if regex.MatchString(s) {
 			return true
 		}
 	}

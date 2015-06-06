@@ -28,7 +28,7 @@ func TestAnalyze(t *testing.T) {
 		Key:		"lang",
 		Extensions:	[]string{"z"},
 		Paths:		[]string{"a/b/x.z"},
-		Matchers:	[]string{"a/b/(c|d).z"},
+		PathMatchers:	[]string{"a/b/(c|d).z"},
 		IgnoredDirs:	[]string{"i"},
 	}
 	tree := []string{
