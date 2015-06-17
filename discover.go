@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	root string
 	tree []string
 	languages = []language{
 		puppetFiles,
@@ -29,7 +30,8 @@ type language struct {
 }
 
 // Run returns all matches of a language type from the root of the specified tree
-func Run(root string) map[string][]string {
+func Run(r string) map[string][]string {
+	root = r
 	os.Chdir(root)
 	walkDirectory(root)
 	results := analyzeTree(languages, tree)
@@ -43,7 +45,11 @@ func walkDirectory(root string) {
 
 func visitFile(path string, file os.FileInfo, err error) error {
 	if !file.IsDir() {
-		tree = append(tree, path)
+		rpath := path
+		if root != "." {
+			rpath = strings.Replace(path, root, "", 1)
+		}
+		tree = append(tree, rpath)
 	}
 	return nil
 }
