@@ -47,7 +47,7 @@ func visitFile(path string, file os.FileInfo, err error) error {
 	if !file.IsDir() {
 		rpath := path
 		if root != "." {
-			rpath = strings.Replace(path, root, "", 1)
+			rpath = strings.Replace(path, root, ".", 1)
 		}
 		tree = append(tree, rpath)
 	}
