@@ -12,6 +12,7 @@ import (
 var (
 	root string
 	tree []string
+	results map[string][]string
 	languages = []language{
 		puppetFiles,
 		puppetModule,
@@ -35,9 +36,15 @@ func Run(r string) map[string][]string {
 		r = fmt.Sprintf("%s/", r)
 	}
 	root = r
-	os.Chdir(root)
-	walkDirectory(root)
-	results := analyzeTree(languages, tree)
+	wd, err := os.Getwd()
+	if err != nil {
+		results["error"] = []string{err.Error()}
+	} else {
+		os.Chdir(root)
+		walkDirectory(root)
+		results = analyzeTree(languages, tree)
+		os.Chdir(wd)
+	}
 	results["root"] = []string{root}
 	return results
 }
@@ -164,6 +171,6 @@ func searchContent(expression string, file string) bool {
 		if regex.MatchString(s) {
 			return true
 		}
+		return false
 	}
-	return false
 }
