@@ -8,7 +8,7 @@ import (
 func TestRun(t *testing.T) {
 	gomega.RegisterTestingT(t)
 	results := Run(".")
-	gomega.Expect(results["root"]).To(gomega.Equal([]string{"."}))
+	gomega.Expect(results["root"]).To(gomega.Equal([]string{"./"}))
 }
 
 func TestWalkDirectory(t *testing.T) {

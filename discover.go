@@ -31,6 +31,9 @@ type language struct {
 
 // Run returns all matches of a language type from the root of the specified tree
 func Run(r string) map[string][]string {
+	if ! strings.HasSuffix(r, "/") {
+		r = fmt.Sprintf("%s/", r)
+	}
 	root = r
 	os.Chdir(root)
 	walkDirectory(root)
@@ -47,7 +50,7 @@ func visitFile(path string, file os.FileInfo, err error) error {
 	if !file.IsDir() {
 		rpath := path
 		if root != "." {
-			rpath = strings.Replace(path, root, ".", 1)
+			rpath = strings.Replace(path, root, "", 1)
 		}
 		tree = append(tree, rpath)
 	}
