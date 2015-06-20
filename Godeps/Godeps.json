@@ -1,0 +1,11 @@
+{
+	"ImportPath": "github.com/cyclopsci/discover",
+	"GoVersion": "go1.4.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-43-gf4f1cae",
+			"Rev": "f4f1caefe95e396ea97b72dd6c52973ae4a6978c"
+		}
+	]
+}
