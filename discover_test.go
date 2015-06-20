@@ -2,24 +2,25 @@ package discover
 
 import (
 	"testing"
+	"io/ioutil"
+	"os"
+
 	"github.com/onsi/gomega"
 )
 
 func TestRun(t *testing.T) {
 	gomega.RegisterTestingT(t)
-	results := Run(".")
-	gomega.Expect(results["root"]).To(gomega.Equal([]string{"./"}))
+
+	results := Run("./testing/fixtures")
+	gomega.Expect(results["root"]).To(gomega.Equal([]string{"testing/fixtures/"}))
 }
 
 func TestWalkDirectory(t *testing.T) {
 	gomega.RegisterTestingT(t)
-	walkDirectory(".")
-	gomega.Expect(tree).To(gomega.ContainElement(".gitignore"))
-	gomega.Expect(tree).To(gomega.ContainElement("README.md"))
-	gomega.Expect(tree).To(gomega.ContainElement("LICENSE"))
-	gomega.Expect(tree).To(gomega.ContainElement("discover/main.go"))
-	gomega.Expect(tree).To(gomega.ContainElement("discover.go"))
-	gomega.Expect(tree).To(gomega.ContainElement("languages.go"))
+
+	walkDirectory("./testing/fixtures")
+	gomega.Expect(tree).To(gomega.ContainElement("puppet/manifest.pp"))
+	gomega.Expect(tree).To(gomega.ContainElement("ansible/playbook.yml"))
 }
 
 func TestAnalyze(t *testing.T) {
@@ -47,13 +48,26 @@ func TestAnalyze(t *testing.T) {
 
 func TestSearch(t *testing.T) {
 	gomega.RegisterTestingT(t)
+
 	gomega.Expect(search("pkg", "/dir1/pkg/subdir/")).To(gomega.BeTrue())
 	gomega.Expect(search("dir2", "/dir1/pkg/subdir/")).To(gomega.BeFalse())
 }
 
 func TestStringInSlice(t *testing.T) {
 	gomega.RegisterTestingT(t)
+
 	s := []string{"a","b"}
 	gomega.Expect(stringInSlice("a", s)).To(gomega.BeTrue())
 	gomega.Expect(stringInSlice("c", s)).To(gomega.BeFalse())
+}
+
+func TestSearchContent(t *testing.T) {
+	gomega.RegisterTestingT(t)
+
+	f, _ := ioutil.TempFile("", "")
+	payload := "The quick brown fox jumps over a lazy dog"
+	ioutil.WriteFile(f.Name(), []byte(payload), 0644)
+	gomega.Expect(searchContent(".*quick.*", f.Name())).To(gomega.BeTrue())
+	gomega.Expect(searchContent("^quick.*", f.Name())).To(gomega.BeFalse())
+	os.Remove(f.Name())
 }

@@ -14,10 +14,10 @@ var (
 	tree []string
 	results map[string][]string
 	languages = []language{
-		puppetFiles,
+		puppetFile,
 		puppetModule,
-		ansibleRoles,
-		ansiblePlaybooks,
+		ansibleRole,
+		ansiblePlaybook,
 	}
 )
 
@@ -35,16 +35,9 @@ func Run(r string) map[string][]string {
 	if ! strings.HasSuffix(r, "/") {
 		r = fmt.Sprintf("%s/", r)
 	}
-	root = r
-	wd, err := os.Getwd()
-	if err != nil {
-		results["error"] = []string{err.Error()}
-	} else {
-		os.Chdir(root)
-		walkDirectory(root)
-		results = analyzeTree(languages, tree)
-		os.Chdir(wd)
-	}
+	root = strings.TrimPrefix(r, "./")
+	walkDirectory(root)
+	results = analyzeTree(languages, tree)
 	results["root"] = []string{root}
 	return results
 }
@@ -101,7 +94,8 @@ func deduplicate(languageMatches []string, totalMatches []string) []string {
 
 func matchLanguage(lang language, file string) string {
 	for _, value := range lang.IgnoredDirs {
-		if search(value, file) {
+		s := strings.Split(file, "/")
+		if stringInSlice(value, s) {
 			return ""
 		}
 	}
@@ -122,10 +116,9 @@ func matchLanguage(lang language, file string) string {
 		if value == ext {
 			return file
 		}
-
 	}
 	for _, value := range lang.ContentRegex {
-		if searchContent(value, file) {
+		if searchContent(value, root + file) {
 			return strings.Replace(file, value, "", 1)
 		}
 	}
@@ -171,6 +164,6 @@ func searchContent(expression string, file string) bool {
 		if regex.MatchString(s) {
 			return true
 		}
-		return false
 	}
+	return false
 }
