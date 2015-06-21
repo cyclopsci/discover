@@ -11,16 +11,16 @@ import (
 func TestRun(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	results := Run("./testing/fixtures")
-	gomega.Expect(results["root"]).To(gomega.Equal([]string{"testing/fixtures/"}))
+	results := Run("./testing/fixtures", "./testing/fixtures")
+	gomega.Expect(results["root"]).To(gomega.Equal([]string{"./testing/fixtures/"}))
 }
 
 func TestWalkDirectory(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
 	walkDirectory("./testing/fixtures")
-	gomega.Expect(tree).To(gomega.ContainElement("puppet/manifest.pp"))
-	gomega.Expect(tree).To(gomega.ContainElement("ansible/playbook.yml"))
+	gomega.Expect(tree).To(gomega.ContainElement("testing/fixtures/puppet/manifest.pp"))
+	gomega.Expect(tree).To(gomega.ContainElement("testing/fixtures/ansible/playbook.yml"))
 }
 
 func TestAnalyze(t *testing.T) {

@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	root string
-	tree []string
-	results map[string][]string
+	root        string
+	displayRoot string
+	tree        []string
+	results     map[string][]string
 	languages = []language{
 		puppetFile,
 		puppetModule,
@@ -22,24 +23,29 @@ var (
 )
 
 type language struct {
-	Key		string
-	Extensions	[]string
-	Paths		[]string
-	PathMatchers	[]string
-	ContentRegex	[]string
-	IgnoredDirs	[]string
+	Key          string
+	Extensions   []string
+	Paths        []string
+	PathMatchers []string
+	ContentRegex []string
+	IgnoredDirs  []string
 }
 
 // Run returns all matches of a language type from the root of the specified tree
-func Run(r string) map[string][]string {
-	if ! strings.HasSuffix(r, "/") {
-		r = fmt.Sprintf("%s/", r)
-	}
-	root = strings.TrimPrefix(r, "./")
+func Run(r string, dr string) map[string][]string {
+	root = normalizeRoot(r)
+	displayRoot = normalizeRoot(dr)
 	walkDirectory(root)
 	results = analyzeTree(languages, tree)
 	results["root"] = []string{root}
 	return results
+}
+
+func normalizeRoot(r string) string {
+	if ! strings.HasSuffix(r, "/") {
+		r = fmt.Sprintf("%s/", r)
+	}
+	return r
 }
 
 func walkDirectory(root string) {
@@ -48,11 +54,7 @@ func walkDirectory(root string) {
 
 func visitFile(path string, file os.FileInfo, err error) error {
 	if !file.IsDir() {
-		rpath := path
-		if root != "." {
-			rpath = strings.Replace(path, root, "", 1)
-		}
-		tree = append(tree, rpath)
+		tree = append(tree, path)
 	}
 	return nil
 }
@@ -64,6 +66,9 @@ func analyzeTree(languages []language, tree []string) map[string][]string {
 		for _, lang := range languages {
 			match := matchLanguage(lang, f)
 			if match != "" {
+				if root != displayRoot {
+					match = strings.Replace(match, root, displayRoot, 1)
+				}
 				matches = append(matches, match)
 				candidates[lang.Key] = append(candidates[lang.Key], match)
 			}
@@ -118,7 +123,7 @@ func matchLanguage(lang language, file string) string {
 		}
 	}
 	for _, value := range lang.ContentRegex {
-		if searchContent(value, root + file) {
+		if searchContent(value, file) {
 			return strings.Replace(file, value, "", 1)
 		}
 	}
