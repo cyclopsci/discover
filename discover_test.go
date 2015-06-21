@@ -12,19 +12,20 @@ func TestRun(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
 	results := Run("./testing/fixtures", "./testing/fixtures")
-	gomega.Expect(results["root"]).To(gomega.Equal([]string{"./testing/fixtures/"}))
+	gomega.Expect(results["root"]).To(gomega.Equal([]string{"./testing/fixtures"}))
 }
 
 func TestWalkDirectory(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	walkDirectory("./testing/fixtures")
+	tree := walkDirectory("./testing/fixtures")
 	gomega.Expect(tree).To(gomega.ContainElement("testing/fixtures/puppet/manifest.pp"))
 	gomega.Expect(tree).To(gomega.ContainElement("testing/fixtures/ansible/playbook.yml"))
 }
 
 func TestAnalyze(t *testing.T) {
 	gomega.RegisterTestingT(t)
+
 	lang := language{
 		Key:		"lang",
 		Extensions:	[]string{"z"},
@@ -32,6 +33,7 @@ func TestAnalyze(t *testing.T) {
 		PathMatchers:	[]string{"a/b/(c|d).z"},
 		IgnoredDirs:	[]string{"i"},
 	}
+
 	tree := []string{
 		"/1/a/b/x.z",
 		"/1/a/b/c.z",
@@ -40,10 +42,37 @@ func TestAnalyze(t *testing.T) {
 		"/i/d/f.z",
 		"/a/d/f.z",
 	}
-	results := analyzeTree([]language{lang}, tree)
+
+	results := analyzeTree("/1", "/1", []language{lang}, tree)
 	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/1/"))
 	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/a/d/f.z"))
 	gomega.Expect(results[lang.Key]).ToNot(gomega.ContainElement("/1/a/b/c.y"))
+}
+
+func TestAnalyzeDisplayRoot(t *testing.T) {
+	gomega.RegisterTestingT(t)
+
+	lang := language{
+		Key:		"lang",
+		Extensions:	[]string{"z"},
+		Paths:		[]string{"a/b/x.z"},
+		PathMatchers:	[]string{"a/b/(c|d).z"},
+		IgnoredDirs:	[]string{"i"},
+	}
+
+	tree := []string{
+		"/1/a/b/x.z",
+		"/1/a/b/c.z",
+		"/1/a/b/c.y",
+		"/1/d/e.z",
+		"/i/d/f.z",
+		"/a/d/f.z",
+	}
+
+	results := analyzeTree("/1", "/2", []language{lang}, tree)
+	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/2/"))
+	gomega.Expect(results[lang.Key]).To(gomega.ContainElement("/a/d/f.z"))
+	gomega.Expect(results[lang.Key]).ToNot(gomega.ContainElement("/2/a/b/c.y"))
 }
 
 func TestSearch(t *testing.T) {

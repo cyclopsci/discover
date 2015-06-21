@@ -6,11 +6,16 @@ import (
 	"github.com/onsi/gomega"
 )
 
+var (
+	root string = "./testing/fixtures/"
+	displayRoot string = "./testing/fixtures/"
+)
+
 func TestLangPuppetFile(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	walkDirectory("./testing/fixtures/")
-	results := analyzeTree([]language{puppetFile,puppetModule}, tree)
+	tree := walkDirectory(root)
+	results := analyzeTree(root, displayRoot, []language{puppetFile,puppetModule}, tree)
 
 	gomega.Expect(results[puppetFile.Key]).To(gomega.Equal([]string{
 		"testing/fixtures/puppet/manifest.pp",
@@ -21,8 +26,8 @@ func TestLangPuppetFile(t *testing.T) {
 func TestLangPuppetModule(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	walkDirectory("./testing/fixtures/")
-	results := analyzeTree([]language{puppetModule}, tree)
+	tree := walkDirectory(root)
+	results := analyzeTree(root, displayRoot, []language{puppetModule}, tree)
 
 	gomega.Expect(results[puppetModule.Key]).To(gomega.Equal([]string{"testing/fixtures/puppet/module/"}))
 }
@@ -30,8 +35,8 @@ func TestLangPuppetModule(t *testing.T) {
 func TestLangAnsibleRole(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	walkDirectory("./testing/fixtures")
-	results := analyzeTree([]language{ansibleRole}, tree)
+	tree := walkDirectory(root)
+	results := analyzeTree(root, displayRoot, []language{ansibleRole}, tree)
 
 	gomega.Expect(results[ansibleRole.Key]).To(gomega.Equal([]string{"testing/fixtures/ansible/role/"}))
 }
@@ -39,8 +44,8 @@ func TestLangAnsibleRole(t *testing.T) {
 func TestLangAnsiblePlaybook(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
-	walkDirectory("./testing/fixtures")
-	results := analyzeTree([]language{ansiblePlaybook}, tree)
+	tree := walkDirectory(root)
+	results := analyzeTree(root, displayRoot, []language{ansiblePlaybook}, tree)
 
 	gomega.Expect(results[ansiblePlaybook.Key]).To(gomega.Equal([]string{"testing/fixtures/ansible/playbook.yml"}))
 }

@@ -9,19 +9,6 @@ import (
 	"path/filepath"
 )
 
-var (
-	root        string
-	displayRoot string
-	tree        []string
-	results     map[string][]string
-	languages = []language{
-		puppetFile,
-		puppetModule,
-		ansibleRole,
-		ansiblePlaybook,
-	}
-)
-
 type language struct {
 	Key          string
 	Extensions   []string
@@ -32,83 +19,97 @@ type language struct {
 }
 
 // Run returns all matches of a language type from the root of the specified tree
-func Run(r string, dr string) map[string][]string {
-	root = normalizeRoot(r)
-	displayRoot = normalizeRoot(dr)
-	walkDirectory(root)
-	results = analyzeTree(languages, tree)
+func Run(root string, displayRoot string) map[string][]string {
+	root = strings.TrimSuffix(root, "/")
+	displayRoot = strings.TrimSuffix(displayRoot, "/")
+
+	languages := []language{
+		puppetFile,
+		puppetModule,
+		ansibleRole,
+		ansiblePlaybook,
+	}
+
+	tree := walkDirectory(root)
+
+	results := analyzeTree(root, displayRoot, languages, tree)
 	results["root"] = []string{root}
+
 	return results
 }
 
-func normalizeRoot(r string) string {
-	if ! strings.HasSuffix(r, "/") {
-		r = fmt.Sprintf("%s/", r)
-	}
-	return r
+func walkDirectory(root string) []string {
+	tree := []string{}
+
+	filepath.Walk(root, func(path string, file os.FileInfo, err error) error {
+		if !file.IsDir() {
+			tree = append(tree, path)
+		}
+		return nil
+	})
+
+	return tree
 }
 
-func walkDirectory(root string) {
-	filepath.Walk(root, visitFile)
-}
+func analyzeTree(root string, displayRoot string, languages []language, tree []string) map[string][]string {
+	var matches = []string{}
+	var results = make(map[string][]string)
 
-func visitFile(path string, file os.FileInfo, err error) error {
-	if !file.IsDir() {
-		tree = append(tree, path)
-	}
-	return nil
-}
-
-func analyzeTree(languages []language, tree []string) map[string][]string {
-	var matches []string
-	var candidates = make(map[string][]string)
 	for _, f := range tree {
 		for _, lang := range languages {
-			match := matchLanguage(lang, f)
+			match := findLanguageMatch(lang, f)
 			if match != "" {
 				if root != displayRoot {
 					match = strings.Replace(match, root, displayRoot, 1)
 				}
 				matches = append(matches, match)
-				candidates[lang.Key] = append(candidates[lang.Key], match)
+				results[lang.Key] = append(results[lang.Key], match)
 			}
 		}
 	}
+
 	for _, lang := range languages {
-		candidates[lang.Key] = deduplicate(candidates[lang.Key], matches)
+		results[lang.Key] = deduplicateResults(results[lang.Key], matches)
 	}
-	return candidates
+
+	return results
 }
 
-func deduplicate(languageMatches []string, totalMatches []string) []string {
-	var results []string
+func deduplicateResults(languageMatches []string, totalMatches []string) []string {
 	var found bool
+	var results = []string{}
+
 	for _, l := range languageMatches {
 		found = false
+
 		for _, m := range totalMatches {
 			if strings.Contains(l, m) && l != m {
 				found = true
 			}
 		}
+
 		if !found && !stringInSlice(l, results) {
 			results = append(results, l)
 		}
 	}
+
 	return results
 }
 
-func matchLanguage(lang language, file string) string {
+func findLanguageMatch(lang language, file string) string {
 	for _, value := range lang.IgnoredDirs {
 		s := strings.Split(file, "/")
 		if stringInSlice(value, s) {
 			return ""
 		}
 	}
+
 	for _, value := range lang.Paths {
 		if search(value, file) {
 			return strings.Replace(file, value, "", 1)
 		}
 	}
+
 	for _, value := range lang.PathMatchers {
 		match, _ := regexp.MatchString(fmt.Sprintf("^.*(/)?%s$", value), file)
 		if match {
@@ -116,17 +117,20 @@ func matchLanguage(lang language, file string) string {
 			return re.ReplaceAllString(file, "")
 		}
 	}
+
 	for _, value := range lang.Extensions {
 		ext := strings.Replace(filepath.Ext(file), ".", "", 1)
 		if value == ext {
 			return file
 		}
 	}
+
 	for _, value := range lang.ContentRegex {
 		if searchContent(value, file) {
 			return strings.Replace(file, value, "", 1)
 		}
 	}
+
 	return ""
 }
 
