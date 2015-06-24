@@ -24,7 +24,7 @@ func Run(root string, displayRoot string) map[string][]string {
 	displayRoot = strings.TrimSuffix(displayRoot, "/")
 
 	languages := []language{
-		puppetFile,
+		puppetManifest,
 		puppetModule,
 		ansibleRole,
 		ansiblePlaybook,
@@ -63,33 +63,10 @@ func analyzeTree(root string, displayRoot string, languages []language, tree []s
 					match = strings.Replace(match, root, displayRoot, 1)
 				}
 				matches = append(matches, match)
-				results[lang.Key] = append(results[lang.Key], match)
+				if !stringInSlice(match, results[lang.Key]) {
+					results[lang.Key] = append(results[lang.Key], match)
+				}
 			}
-		}
-	}
-
-	for _, lang := range languages {
-		results[lang.Key] = deduplicateResults(results[lang.Key], matches)
-	}
-
-	return results
-}
-
-func deduplicateResults(languageMatches []string, totalMatches []string) []string {
-	var found bool
-	var results = []string{}
-
-	for _, l := range languageMatches {
-		found = false
-
-		for _, m := range totalMatches {
-			if strings.Contains(l, m) && l != m {
-				found = true
-			}
-		}
-
-		if !found && !stringInSlice(l, results) {
-			results = append(results, l)
 		}
 	}
 

@@ -15,10 +15,11 @@ func TestLangPuppetFile(t *testing.T) {
 	gomega.RegisterTestingT(t)
 
 	tree := walkDirectory(root)
-	results := analyzeTree(root, displayRoot, []language{puppetFile,puppetModule}, tree)
+	results := analyzeTree(root, displayRoot, []language{puppetManifest,puppetModule}, tree)
 
-	gomega.Expect(results[puppetFile.Key]).To(gomega.Equal([]string{
+	gomega.Expect(results[puppetManifest.Key]).To(gomega.Equal([]string{
 		"testing/fixtures/puppet/manifest.pp",
+		"testing/fixtures/puppet/module/manifests/init.pp",
 		"testing/fixtures/puppet/modulefail/manifests/class.pp",
 	}))
 }

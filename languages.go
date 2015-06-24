@@ -1,7 +1,7 @@
 package discover
 
-var puppetFile = language{
-	Key:		     "puppet_files",
+var puppetManifest = language{
+	Key:		     "puppet_manifests",
 	Extensions:	 []string{"pp"},
 	IgnoredDirs: []string{"spec", "pkg", "tests", "test"},
 }
